@@ -160,8 +160,8 @@ input[type="file"]:hover {
 
         // 新增奖金按钮逻辑
         document.getElementById('add-btn').addEventListener('click', function() {
-            const superiorBonus = { "S1": 163, "S2": 870, "S3": 2970 };
-            const usernameBonus = { "S1": 81, "S2": 435, "S3": 1485 };
+            const superiorBonus = { "S1": 163, "S2": 870, "S3": 2970, "S4": 9370, "S5": 23000 };
+            const usernameBonus = { "S1": 81, "S2": 435, "S3": 1485, "S4": 4685, "S5": 11500 };
             const bonusEntries = [];
 
             excelData.forEach(row => {
@@ -180,29 +180,46 @@ input[type="file"]:hover {
             alert("新增奖金计算完成！");
         });
 
-        // 升级奖金按钮逻辑
-        document.getElementById('upgrade-btn').addEventListener('click', function() {
+     document.getElementById('upgrade-btn').addEventListener('click', function () {
     const outputBox = document.getElementById('output-box');
     outputBox.textContent = ''; // 清空之前的内容
 
     const filteredData = excelData.filter(row =>
-        row[headers['状态']] === "已通过" && row[headers['是否首充']] === "否"
+        row[headers['状态']] === "已通过" &&
+        row[headers['是否首充']] === "否"
     );
 
-    const results = filteredData.map(row => {
-        const username = row[headers['会员账号']]?.match(/用户名：(\d+)/)?.[1];
-        const amountStr = row[headers['金额']];
-        if (!username || !amountStr) return null;
+    const userTotalMap = {};  // 用户名 => 累计充值金额
 
-        const amount = parseFloat(amountStr.replace("充值金额：", ""));
-        if (2000 < amount && amount < 12000) return `${username}+870`;
-        if (15000 < amount && amount < 36000) return `${username}+2970`;
-        return null;
-    }).filter(Boolean);
+    filteredData.forEach(row => {
+        const username = row[headers['会员账号']]?.match(/用户名：(\d+)/)?.[1];
+        if (!username) return;
+
+        const amountStr = row[headers['金额']];
+        const amount = parseFloat(amountStr.replace("充值金额：", "")) || 0;
+
+        if (!userTotalMap[username]) {
+            userTotalMap[username] = 0;
+        }
+        userTotalMap[username] += amount;
+    });
+
+    const results = [];
+
+    for (const [username, totalAmount] of Object.entries(userTotalMap)) {
+        if (totalAmount > 2000 && totalAmount <= 12000) {
+            results.push(`${username}+870`);
+        } else if (totalAmount > 15000 && totalAmount <= 36000) {
+            results.push(`${username}+2970`);
+        } else if (totalAmount > 40000 && totalAmount <= 130000) {
+            results.push(`${username}+9370`);  // S4 正确处理
+        }
+        // 你可以继续添加 S5 判断，如有需要
+    }
 
     outputBox.textContent = results.join('\n');
     alert("升级奖金计算完成！");
-    });
+});
 
     </script>
 </body>
