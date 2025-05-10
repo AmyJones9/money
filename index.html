@@ -179,7 +179,7 @@ input[type="file"]:hover {
             document.getElementById('output-box').textContent = bonusEntries.join('\n');
             alert("新增奖金计算完成！");
         });
-
+	//升级奖金
      document.getElementById('upgrade-btn').addEventListener('click', function () {
     const outputBox = document.getElementById('output-box');
     outputBox.textContent = ''; // 清空之前的内容
@@ -208,13 +208,14 @@ input[type="file"]:hover {
 
     for (const [username, totalAmount] of Object.entries(userTotalMap)) {
         if (totalAmount > 2000 && totalAmount <= 12000) {
-            results.push(`${username}+870`);
+            results.push(`${username}+609`);
         } else if (totalAmount > 15000 && totalAmount <= 36000) {
-            results.push(`${username}+2970`);
+            results.push(`${username}+2079`);
         } else if (totalAmount > 40000 && totalAmount <= 130000) {
-            results.push(`${username}+9370`);  // S4 正确处理
+            results.push(`${username}+6559`);  // S4 正确处理
+        } else if (totalAmount > 150000 && totalAmount <= 300000) {
+            results.push(`${username}+16100`);  // S5 正确处理
         }
-        // 你可以继续添加 S5 判断，如有需要
     }
 
     outputBox.textContent = results.join('\n');
