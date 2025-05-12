@@ -184,43 +184,53 @@ input[type="file"]:hover {
     const outputBox = document.getElementById('output-box');
     outputBox.textContent = ''; // 清空之前的内容
 
-    const filteredData = excelData.filter(row =>
-        row[headers['状态']] === "已通过" &&
-        row[headers['是否首充']] === "否"
-    );
+    const userHasFirstCharge = new Set(); // 存储所有有“首充”的用户名
+    const userPayments = {};  // 用户名 => 所有付款金额总和
 
-    const userTotalMap = {};  // 用户名 => 累计充值金额
-
-    filteredData.forEach(row => {
+    // 第一步：找出哪些用户名有“首充”
+    excelData.forEach(row => {
         const username = row[headers['会员账号']]?.match(/用户名：(\d+)/)?.[1];
         if (!username) return;
 
-        const amountStr = row[headers['金额']];
-        const amount = parseFloat(amountStr.replace("充值金额：", "")) || 0;
-
-        if (!userTotalMap[username]) {
-            userTotalMap[username] = 0;
+        if (row[headers['是否首充']] === "是") {
+            userHasFirstCharge.add(username);
         }
-        userTotalMap[username] += amount;
     });
 
-    const results = [];
+    // 第二步：统计无首充用户的付款总额
+    excelData.forEach(row => {
+        const username = row[headers['会员账号']]?.match(/用户名：(\d+)/)?.[1];
+        if (!username || userHasFirstCharge.has(username)) return; // 有首充的跳过
 
-    for (const [username, totalAmount] of Object.entries(userTotalMap)) {
+        if (row[headers['状态']] === "已通过" && row[headers['是否首充']] === "否") {
+            const amountStr = row[headers['金额']];
+            const amount = parseFloat(amountStr.replace("充值金额：", "")) || 0;
+
+            if (!userPayments[username]) {
+                userPayments[username] = 0;
+            }
+            userPayments[username] += amount;
+        }
+    });
+
+    // 第三步：根据充值总额计算升级奖金
+    const results = [];
+    for (const [username, totalAmount] of Object.entries(userPayments)) {
         if (totalAmount > 2000 && totalAmount <= 12000) {
             results.push(`${username}+609`);
         } else if (totalAmount > 15000 && totalAmount <= 36000) {
             results.push(`${username}+2079`);
         } else if (totalAmount > 40000 && totalAmount <= 130000) {
-            results.push(`${username}+6559`);  // S4 正确处理
+            results.push(`${username}+6559`);
         } else if (totalAmount > 150000 && totalAmount <= 300000) {
-            results.push(`${username}+16100`);  // S5 正确处理
+            results.push(`${username}+16100`);
         }
     }
 
     outputBox.textContent = results.join('\n');
     alert("升级奖金计算完成！");
 });
+
 
     </script>
 </body>
