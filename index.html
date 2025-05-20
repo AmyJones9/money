@@ -108,14 +108,14 @@ input[type="file"]:hover {
 }
     </style>
 </head>
-
+<body>
     <div class="container">
         <h1>奖金计算</h1>
 	<h5>注意:如果存在充值1630升级临时工的成员，请生成后并删除。如无则正常使用</h5>
         <h5>正确的格式为:充值记录.xlsx</h5>
         <div class="file-input">
             <label for="file-upload">请上传 Excel 文件 (.xlsx):</label>
-            <input type="file" id="file-upload" accept=".xlsx" />
+            <input type="file" id="file-upload" accept=".xlsx"||".xls" />
         </div>
         <div class="buttons">
             <button id="add-btn" disabled>新增奖金</button>
@@ -123,7 +123,7 @@ input[type="file"]:hover {
         </div>
         <div class="output-box" id="output-box"></div>
     </div>
-    <body>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script>
         let excelData = [];
@@ -160,8 +160,8 @@ input[type="file"]:hover {
 
         // 新增奖金按钮逻辑
         document.getElementById('add-btn').addEventListener('click', function() {
-            const superiorBonus = { "S1": 163, "S2": 870, "S3": 2970, "S4": 9370, "S5": 23000 };
-            const usernameBonus = { "S1": 81, "S2": 435, "S3": 1485, "S4": 4685, "S5": 11500 };
+            const superiorBonus = { "S1": 212, "S2": 1131,"S3": 3861, "S4": 12181, "S5": 29900 };
+            const usernameBonus = { "S1": 114, "S2": 609, "S3": 2079, "S4": 6559, "S5": 16100 };
             const bonusEntries = [];
 
             excelData.forEach(row => {
@@ -180,12 +180,13 @@ input[type="file"]:hover {
             alert("新增奖金计算完成！");
         });
 	//升级奖金
-     document.getElementById('upgrade-btn').addEventListener('click', function () {
+     // 升级奖金
+document.getElementById('upgrade-btn').addEventListener('click', function () {
     const outputBox = document.getElementById('output-box');
     outputBox.textContent = ''; // 清空之前的内容
 
     const userHasFirstCharge = new Set(); // 存储所有有“首充”的用户名
-    const userPayments = {};  // 用户名 => 所有付款金额总和
+    const userPayments = {};  // 用户名 => { totalAmount, level }
 
     // 第一步：找出哪些用户名有“首充”
     excelData.forEach(row => {
@@ -197,9 +198,10 @@ input[type="file"]:hover {
         }
     });
 
-    // 第二步：统计无首充用户的付款总额
+    // 第二步：统计无首充用户的付款总额，并记录等级
     excelData.forEach(row => {
         const username = row[headers['会员账号']]?.match(/用户名：(\d+)/)?.[1];
+        const level = row[headers['会员等级']];  // 获取会员等级（S2, S3, S4, S5）
         if (!username || userHasFirstCharge.has(username)) return; // 有首充的跳过
 
         if (row[headers['状态']] === "已通过" && row[headers['是否首充']] === "否") {
@@ -207,30 +209,58 @@ input[type="file"]:hover {
             const amount = parseFloat(amountStr.replace("充值金额：", "")) || 0;
 
             if (!userPayments[username]) {
-                userPayments[username] = 0;
+                userPayments[username] = { totalAmount: 0, level };
             }
-            userPayments[username] += amount;
+            userPayments[username].totalAmount += amount;
         }
     });
 
-    // 第三步：根据充值总额计算升级奖金
+    // 等级映射：根据金额范围对应的基础等级
+    const levelMap = {
+        "2000-12000": "S2",
+        "15000-36000": "S3",
+        "40000-130000": "S4",
+        "150000-300000": "S5"
+    };
+
+    // 对应的奖励金额
+    const rewardMap = {
+        "S2": 1131,
+        "S3": 3861,
+        "S4": 12181,
+        "S5": 29900
+    };
+
+    // 定义等级的排序，用于比较
+    const levelOrder = ["S2", "S3", "S4", "S5"];
+
+    // 第三步：根据充值总额和等级计算升级奖金
     const results = [];
-    for (const [username, totalAmount] of Object.entries(userPayments)) {
+    for (const [username, { totalAmount, level }] of Object.entries(userPayments)) {
+        let reward = 0;
+
         if (totalAmount > 2000 && totalAmount <= 12000) {
-            results.push(`${username}+609`);
+            const baseLevel = "S2";
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 1131;
         } else if (totalAmount > 15000 && totalAmount <= 36000) {
-            results.push(`${username}+2079`);
+            const baseLevel = "S3";
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 3861;
         } else if (totalAmount > 40000 && totalAmount <= 130000) {
-            results.push(`${username}+6559`);
+            const baseLevel = "S4";
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 12181;
         } else if (totalAmount > 150000 && totalAmount <= 300000) {
-            results.push(`${username}+16100`);
+            const baseLevel = "S5";
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 29900;
+        }
+
+        if (reward > 0) {
+            results.push(`${username}+${reward}`);
         }
     }
 
     outputBox.textContent = results.join('\n');
     alert("升级奖金计算完成！");
 });
-
 
     </script>
 </body>
