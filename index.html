@@ -36,13 +36,6 @@ h5 {
     font-weight: normal;
 }
 
-h4 {
-    text-align: center;
-    color: #d9534f;
-    margin: 5px 0;
-    font-weight: normal;
-}
-	    
 .file-input {
     margin: 30px 0 20px;
     text-align: center;
@@ -118,8 +111,7 @@ input[type="file"]:hover {
 <body>
     <div class="container">
         <h1>奖金计算</h1>
-	<h4>注意:如果充值进来买基金的则需删除对应的升级奖金数据</h5>
-	<h5>生成undefined数据为临时工身份，可删除</h4>
+	<h5>注意:如果存在充值1630升级临时工的成员，请生成后并删除。如无则正常使用</h5>
         <h5>正确的格式为后缀:xlsx/xls</h5>
         <div class="file-input">
             <label for="file-upload">请上传 Excel 文件 (.xlsx):</label>
@@ -168,8 +160,8 @@ input[type="file"]:hover {
 
         // 新增奖金按钮逻辑
         document.getElementById('add-btn').addEventListener('click', function() {
-            const superiorBonus = { "S1": 212, "S2": 1131,"S3": 3861, "S4": 12181, "S5": 29900 };
-            const usernameBonus = { "S1": 114, "S2": 609, "S3": 2079, "S4": 6559, "S5": 16100 };
+            const superiorBonus = { "S1": 163, "S2": 1305,"S3": 3861, "S4": 14055, "S5": 34500 };
+            const usernameBonus = { "S1": 163, "S2": 870, "S3": 2970, "S4": 9370, "S5": 23000 };
             const bonusEntries = [];
 
             excelData.forEach(row => {
@@ -233,10 +225,10 @@ document.getElementById('upgrade-btn').addEventListener('click', function () {
 
     // 对应的奖励金额
     const rewardMap = {
-        "S2": 1131,
-        "S3": 3861,
-        "S4": 12181,
-        "S5": 29900
+        "S2": 1305,
+        "S3": 4455,
+        "S4": 14055,
+        "S5": 34500
     };
 
     // 定义等级的排序，用于比较
@@ -249,16 +241,16 @@ document.getElementById('upgrade-btn').addEventListener('click', function () {
 
         if (totalAmount > 2000 && totalAmount <= 12000) {
             const baseLevel = "S2";
-            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 1131;
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 1305;
         } else if (totalAmount > 15000 && totalAmount <= 36000) {
             const baseLevel = "S3";
-            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 3861;
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 4455;
         } else if (totalAmount > 40000 && totalAmount <= 130000) {
             const baseLevel = "S4";
-            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 12181;
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 14055;
         } else if (totalAmount > 150000 && totalAmount <= 300000) {
             const baseLevel = "S5";
-            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 29900;
+            reward = (levelOrder.indexOf(level) > levelOrder.indexOf(baseLevel)) ? rewardMap[level] : 34500;
         }
 
         if (reward > 0) {
